@@ -1,19 +1,8 @@
 #include <algorithm>
-#include <array>
-#include <fstream>
-#include <iostream>
 #include <sstream>
 #include <string>
 
-#include "opcode.h"
-#include "register.h"
-
-enum AssemblerReturn : int
-{
-    SUCCESS = 0,
-    CANNOT_OPEN_FILE,
-    UNKNOWN_OPCODE
-};
+#include "assembler.h"
 
 int main(int argc, char *argv[])
 {
@@ -46,21 +35,25 @@ int main(int argc, char *argv[])
         std::string mnemonic;
         line >> mnemonic;
 
-        if (opCodeTable.count(mnemonic) < 1)
+        if (!ValidateMnemonic(mnemonic))
         {
-            std::cout << "Error: unrecognized instruction mnemonic'" << mnemonic << "' on line " << i << std::endl;
             return AssemblerReturn::UNKNOWN_OPCODE;
         }
 
-        const OpCode &opCode{};
-        // Now let's see how many operators we'll deal with.
-        // Remember that SET, and SET_M are special commands.
-        // They are the only 2-word instructions. The second word comes as an argument, so add +1 to its op count.
+        const OpCode &opCode = opCodeTable[mnemonic];
 
-        const unsigned argCount =
-            ((opCode.id == OpCodeId::SET) || (opCode.id == OpCodeId::SET_M)) ? opCode.argCount + 1 : opCode.argCount;
+        // Remember that SET, and SET_M are special commands. We'll process them separately
+        const bool isSpecialInstruction = (opCode.id == OpCodeId::SET) || (opCode.id == OpCodeId::SET_M);
+        if (isSpecialInstruction)
+        {
+            line >> args[0];
+            line >> args[1];
+            ValidateRegister(args[0]);
+            auto instReg = std::reinterpret_cast<RegisterId>(registerMap[args[0]]);
+            continue;
+        }
 
-        for (unsigned i = 0; i < argCount; ++i)
+        for (unsigned i = 0; i < opCode.argCount; ++i)
         {
             line >> args[i];
         }

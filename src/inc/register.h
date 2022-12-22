@@ -3,7 +3,7 @@
 #include <string>
 #include <unordered_map>
 
-enum class RegisterId
+enum class RegisterId : uint8_t
 {
     RAC = 0,
     RFL,
