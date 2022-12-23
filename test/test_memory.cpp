@@ -1,9 +1,7 @@
-#include <algorithm>
 #include <gtest/gtest.h>
-#include <iomanip>
-#include <iostream>
 
-#include <memory.h>
+#include "common.h"
+#include "memory.h"
 
 using Memory16 = Memory<uint16_t>;
 

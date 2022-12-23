@@ -1,18 +1,15 @@
-#include <array>
-#include <iostream>
-#include <regex>
-#include <sstream>
-#include <string>
-#include <tuple>
-
+#include "common.h"
 #include "opcode.h"
 #include "register.h"
 
 enum AssemblerReturn : int
 {
     SUCCESS = 0,
+    BAD_ARGUMENTS,
     CANNOT_OPEN_FILE,
-    UNKNOWN_OPCODE
+    UNKNOWN_OPCODE,
+    UNKNOWN_REGISTER,
+    INVALID_LITERAL
 };
 
 bool ValidateRegister(std::string regName)
@@ -41,9 +38,11 @@ std::tuple<bool, uint16_t> GetLiteralValue(std::string literal)
     uint16_t unsignedValue;
     int16_t signedValue;
 
+    // First check if it's a decimal or hex
     auto hexIndex = literal.find(hexLiteral);
     if (hexIndex != std::string::npos)
     {
+        // Hex doesn't accept negatives
         literal.erase(hexIndex, hexLiteral.length());
         if (!std::regex_match(literal, std::regex("[0-9a-fA-F]*")))
         {
@@ -64,9 +63,25 @@ std::tuple<bool, uint16_t> GetLiteralValue(std::string literal)
     std::stringstream ssLiteral(literal);
     if (literal.find("-"))
     {
+        // Keep the bit ordering
         ssLiteral >> signedValue;
-        return {true, std::reinterpret_cast<uint16_t>(signedValue)};
+        std::memcpy(&unsignedValue, &signedValue, sizeof(unsignedValue));
+        return {true, unsignedValue};
     }
     ssLiteral >> unsignedValue;
     return {true, unsignedValue};
+}
+
+uint16_t EncodeInstructionWord(const OpCode &opCode, const std::array<RegisterId, 3> &args)
+{
+    uint16_t instructionWord = (opCode.opCode << (opCode.argCount * 4));
+    for (auto i = 0; i < opCode.argCount; ++i)
+    {
+        // If we ever hit this, something went wrong.
+        assert(opCode.argCount >= (i + 1));
+
+        auto nArgShiftCount = opCode.argCount - (i + 1);
+        instructionWord |= (static_cast<uint16_t>(args[i]) << nArgShiftCount);
+    }
+    return 0;
 }

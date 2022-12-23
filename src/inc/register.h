@@ -1,7 +1,5 @@
 #pragma once
-#include <array>
-#include <string>
-#include <unordered_map>
+#include "common.h"
 
 enum class RegisterId : uint8_t
 {

@@ -1,6 +1,5 @@
 #pragma once
-#include <stdexcept>
-#include <vector>
+#include "common.h"
 
 // TODO: Consider implementing uninitialized memory checks
 template <typename TAddressSpace> class Memory
