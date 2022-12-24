@@ -16,9 +16,9 @@ add_executable(Test
 )
 target_include_directories(Test PRIVATE ${SRC_INC_DIR})
 
-target_link_libraries(Test
-PRIVATE
- GTest::GTest
- )
+target_link_libraries(Test PRIVATE
+  GTest::GTest
+  data_table
+)
 
 add_test(Test_gtest Test)
